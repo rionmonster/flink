@@ -49,6 +49,7 @@ jobs:
               -Drat.skip=true \
               -Dcheckstyle.skip=true \
               -Dspotless.check.skip=true \
+              -Denforcer.skip=true \
               package
 
       - name: Run only the repro test (no -am)
@@ -60,5 +61,6 @@ jobs:
               -Drat.skip=true \
               -Dcheckstyle.skip=true \
               -Dspotless.check.skip=true \
+              -Denforcer.skip=true \
               -Dtest=FileSystemTableSourceTest#testForOsIndependentFileNameFix \
               test
