@@ -62,5 +62,5 @@ jobs:
               -Dcheckstyle.skip=true \
               -Dspotless.check.skip=true \
               -Denforcer.skip=true \
-              -Dtest=FileSystemTableSourceTest#testForOsIndependentFileNameFix \
+              -Dtest=FileSystemTableSourceTest#testForWindowsSpecificFileNameFix \
               test
