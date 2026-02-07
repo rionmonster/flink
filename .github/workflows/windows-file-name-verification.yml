@@ -1,0 +1,26 @@
+name: FLINK-38936 Windows Verification
+
+on:
+  push:
+    branches: [ "flink-38936-windows" ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Run only the repro test (connector-files module)
+        shell: bash
+        run: |
+          ./mvnw -pl flink-connectors/flink-connector-files -am -DskipITs -Dtest=FileSystemTableSourceTest#testForOsIndependentFileNameFix test
