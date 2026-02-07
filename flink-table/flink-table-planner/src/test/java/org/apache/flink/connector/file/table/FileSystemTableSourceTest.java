@@ -18,6 +18,8 @@
 
 package org.apache.flink.connector.file.table;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.apache.flink.connector.file.src.FileSourceSplit;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.table.api.TableConfig;
@@ -27,7 +29,6 @@ import org.apache.flink.table.data.StringData;
 import org.apache.flink.table.planner.utils.StreamTableTestUtil;
 import org.apache.flink.table.planner.utils.TableTestBase;
 import org.apache.flink.types.Row;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
@@ -41,8 +42,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Iterator;
 import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /** Test for {@link FileSystemTableSource}. */
 class FileSystemTableSourceTest extends TableTestBase {

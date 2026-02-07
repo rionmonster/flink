@@ -10,8 +10,10 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout (short path to avoid Windows path length issues)
         uses: actions/checkout@v4
+        with:
+          path: f
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -20,7 +22,14 @@ jobs:
           java-version: "17"
           cache: maven
 
-      - name: Run only the repro test (connector-files module)
+      - name: Build deps (skip all tests)
         shell: bash
+        working-directory: f
         run: |
-          ./mvnw -pl flink-connectors/flink-connector-files -am -DskipITs -Dtest=FileSystemTableSourceTest#testForOsIndependentFileNameFix test
+          ./mvnw -pl flink-connectors/flink-connector-files -am -DskipTests -DskipITs package
+
+      - name: Run only the repro test (no -am)
+        shell: bash
+        working-directory: f
+        run: |
+          ./mvnw -pl flink-connectors/flink-connector-files -DskipITs -Dtest=FileSystemTableSourceTest#testForWindowsSpecificFileNameFix test
