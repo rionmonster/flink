@@ -10,10 +10,27 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout (short path to avoid Windows path length issues)
+      - name: Configure git for long paths
+        shell: bash
+        run: |
+          git config --global core.longpaths true
+
+      - name: Checkout (sparse)
         uses: actions/checkout@v4
         with:
           path: f
+          fetch-depth: 1
+          sparse-checkout: |
+            .mvn
+            mvnw
+            pom.xml
+            tools
+            flink-annotations
+            flink-core
+            flink-test-utils-parent
+            flink-connectors/flink-connector-files
+            flink-table
+          sparse-checkout-cone-mode: false
 
       - name: Set up Java
         uses: actions/setup-java@v4
