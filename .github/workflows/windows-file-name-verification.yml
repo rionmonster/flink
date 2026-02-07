@@ -43,10 +43,10 @@ jobs:
         shell: bash
         working-directory: f
         run: |
-          ./mvnw -pl flink-connectors/flink-connector-files -am -DskipTests -DskipITs package
+          mvn -pl flink-connectors/flink-connector-files -am -DskipTests -DskipITs package
 
       - name: Run only the repro test (no -am)
         shell: bash
         working-directory: f
         run: |
-          ./mvnw -pl flink-connectors/flink-connector-files -DskipITs -Dtest=FileSystemTableSourceTest#testForWindowsSpecificFileNameFix test
+          mvn -pl flink-connectors/flink-connector-files -DskipITs -Dtest=FileSystemTableSourceTest#testForOsIndependentFileNameFix test
