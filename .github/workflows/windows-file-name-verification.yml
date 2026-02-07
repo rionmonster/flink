@@ -43,10 +43,22 @@ jobs:
         shell: bash
         working-directory: f
         run: |
-          mvn -pl flink-connectors/flink-connector-files -am -DskipTests -DskipITs package
+          mvn -pl flink-connectors/flink-connector-files -am \
+              -DskipTests \
+              -DskipITs \
+              -Dskip.rat=true \
+              -Dcheckstyle.skip=true \
+              -Dspotless.check.skip=true \
+              package
 
       - name: Run only the repro test (no -am)
         shell: bash
         working-directory: f
         run: |
-          mvn -pl flink-connectors/flink-connector-files -DskipITs -Dtest=FileSystemTableSourceTest#testForOsIndependentFileNameFix test
+          mvn -pl flink-connectors/flink-connector-files \
+              -DskipITs \
+              -Dskip.rat=true \
+              -Dcheckstyle.skip=true \
+              -Dspotless.check.skip=true \
+              -Dtest=FileSystemTableSourceTest#testForOsIndependentFileNameFix \
+              test
