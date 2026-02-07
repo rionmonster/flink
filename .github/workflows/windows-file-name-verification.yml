@@ -46,7 +46,7 @@ jobs:
           mvn -pl flink-connectors/flink-connector-files -am \
               -DskipTests \
               -DskipITs \
-              -Dskip.rat=true \
+              -Drat.skip=true \
               -Dcheckstyle.skip=true \
               -Dspotless.check.skip=true \
               package
@@ -57,7 +57,7 @@ jobs:
         run: |
           mvn -pl flink-connectors/flink-connector-files \
               -DskipITs \
-              -Dskip.rat=true \
+              -Drat.skip=true \
               -Dcheckstyle.skip=true \
               -Dspotless.check.skip=true \
               -Dtest=FileSystemTableSourceTest#testForOsIndependentFileNameFix \
