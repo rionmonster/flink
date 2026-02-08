@@ -41,11 +41,17 @@ jobs:
           java -version
           mvn -v
 
+      - name: Confirm test source exists
+        shell: bash
+        working-directory: f
+        run: |
+          ls -la flink-table/flink-table-planner/src/test/java/org/apache/flink/connector/file/table/FileSystemTableSourceTest.java
+
       - name: Build dependencies (skip tests and checks)
         shell: bash
         working-directory: f
         run: |
-          mvn -pl flink-connectors/flink-connector-files -am \
+          mvn -pl flink-table/flink-table-planner -am \
               -DskipTests \
               -DskipITs \
               -Drat.skip=true \
@@ -54,15 +60,15 @@ jobs:
               -Dspotless.check.skip=true \
               package
 
-      - name: Run FLINK-38936 repro test
+      - name: Run FLINK-38936 repro test (Windows)
         shell: bash
         working-directory: f
         run: |
-          mvn -pl flink-connectors/flink-connector-files \
+          mvn -pl flink-table/flink-table-planner \
               -DskipITs \
               -Drat.skip=true \
               -Denforcer.skip=true \
               -Dcheckstyle.skip=true \
               -Dspotless.check.skip=true \
-              -Dtest=FileSystemTableSourceTest#testForWindowsSpecificFileNameFix \
+              -Dtest='org.apache.flink.connector.file.table.FileSystemTableSourceTest#testForWindowsSpecificFileNameFix' \
               test
