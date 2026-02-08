@@ -41,13 +41,12 @@ jobs:
           java -version
           mvn -v
 
-      - name: Sanity check: test source exists
+      - name: Sanity check test source exists
         shell: bash
         working-directory: f
         run: |
           ls -la flink-table/flink-table-planner/src/test/java/org/apache/flink/connector/file/table/FileSystemTableSourceTest.java
 
-      # Critical: build/install the module that contains the fix so planner tests pick it up
       - name: Build & install connector-files (skip tests/checks)
         shell: bash
         working-directory: f
