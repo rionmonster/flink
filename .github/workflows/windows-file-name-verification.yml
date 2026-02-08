@@ -10,47 +10,22 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      # Enable long paths at the OS level
       - name: Enable Windows long paths
         shell: powershell
         run: |
           reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v LongPathsEnabled /t REG_DWORD /d 1 /f
 
-      # Enable long paths in Git
       - name: Configure git for long paths
         shell: bash
         run: |
           git config --global core.longpaths true
 
-      # Checkout with sparse patterns including all Flink modules
-      - name: Checkout (sparse, all Flink modules)
+      - name: Checkout (full, short path)
         uses: actions/checkout@v4
         with:
           path: f
           fetch-depth: 1
-          sparse-checkout: |
-            .mvn/**
-            mvnw
-            pom.xml
-            tools/**
-            flink-*/**
-          sparse-checkout-cone-mode: false
 
-      # Verify critical sources exist (fail fast if sparse checkout is broken)
-      - name: Verify sparse checkout includes required sources
-        shell: bash
-        working-directory: f
-        run: |
-          echo "Checking for Tuple2..."
-          ls -la flink-java/src/main/java/org/apache/flink/api/java/tuple/Tuple2.java
-
-          echo "Checking for MemorySize..."
-          ls -la flink-core/src/main/java/org/apache/flink/configuration/MemorySize.java
-
-          echo "Checking for FunctionWithException..."
-          ls -la flink-core/src/main/java/org/apache/flink/util/function/FunctionWithException.java
-
-      # Install Java 17
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
@@ -58,7 +33,6 @@ jobs:
           java-version: "17"
           cache: maven
 
-      # Print tool versions for debugging
       - name: Show Java and Maven versions
         shell: bash
         working-directory: f
@@ -67,7 +41,6 @@ jobs:
           java -version
           mvn -v
 
-      # Build only required dependencies (skip all noisy checks)
       - name: Build dependencies (skip tests and checks)
         shell: bash
         working-directory: f
@@ -81,7 +54,6 @@ jobs:
               -Dspotless.check.skip=true \
               package
 
-      # Run only the Windows repro test
       - name: Run FLINK-38936 repro test
         shell: bash
         working-directory: f
