@@ -18,6 +18,8 @@
 
 package org.apache.flink.connector.file.table;
 
+import static org.apache.flink.util.CollectionUtil.entry;
+
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.configuration.ReadableConfig;
@@ -56,13 +58,11 @@ import org.apache.flink.table.factories.FactoryUtil;
 import org.apache.flink.table.plan.stats.TableStats;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.table.utils.PartitionPathUtils;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
-
 import java.io.Serializable;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -77,7 +77,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static org.apache.flink.util.CollectionUtil.entry;
+import javax.annotation.Nullable;
 
 /** File system table source. */
 @Internal
@@ -516,7 +516,8 @@ public class FileSystemTableSource extends AbstractFileSystemTable
 
                     @Override
                     public Object getValue(FileSourceSplit split) {
-                        return StringData.fromString(extractFileName(split.path()));
+                        return StringData.fromString(
+                                Paths.get(split.path().getPath()).getFileName().toString());
                     }
                 }),
         SIZE(

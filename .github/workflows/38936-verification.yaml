@@ -1,0 +1,74 @@
+name: FLINK-38936 Windows Verification
+
+on:
+  push:
+    branches: [ "flink-38936-windows-ci" ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: windows-latest
+
+    steps:
+      - name: Enable Windows long paths
+        shell: powershell
+        run: |
+          reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v LongPathsEnabled /t REG_DWORD /d 1 /f
+
+      - name: Configure git for long paths
+        shell: bash
+        run: |
+          git config --global core.longpaths true
+
+      - name: Checkout (full, short path)
+        uses: actions/checkout@v4
+        with:
+          path: f
+          fetch-depth: 1
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Show Java and Maven versions
+        shell: bash
+        working-directory: f
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME"
+          java -version
+          mvn -v
+
+      - name: Sanity check test source exists
+        shell: bash
+        working-directory: f
+        run: |
+          ls -la flink-table/flink-table-planner/src/test/java/org/apache/flink/connector/file/table/FileSystemTableSourceTest.java
+
+      - name: Build & install connector-files (skip tests/checks)
+        shell: bash
+        working-directory: f
+        run: |
+          mvn -pl flink-connectors/flink-connector-files -am \
+              -DskipTests \
+              -DskipITs \
+              -Drat.skip=true \
+              -Denforcer.skip=true \
+              -Dcheckstyle.skip=true \
+              -Dspotless.check.skip=true \
+              install
+
+      - name: Run FLINK-38936 repro test (Windows)
+        shell: bash
+        working-directory: f
+        run: |
+          mvn -pl flink-table/flink-table-planner \
+              -DskipITs \
+              -Drat.skip=true \
+              -Denforcer.skip=true \
+              -Dcheckstyle.skip=true \
+              -Dspotless.check.skip=true \
+              -Dtest='org.apache.flink.connector.file.table.FileSystemTableSourceTest#testForWindowsSpecificFileNameFix' \
+              test

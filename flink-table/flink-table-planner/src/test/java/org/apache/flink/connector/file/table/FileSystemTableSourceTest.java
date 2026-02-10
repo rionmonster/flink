@@ -24,15 +24,23 @@ import org.apache.flink.connector.file.src.FileSourceSplit;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.table.api.TableConfig;
 import org.apache.flink.table.api.TableEnvironment;
+import org.apache.flink.table.api.TableResult;
 import org.apache.flink.table.data.StringData;
 import org.apache.flink.table.planner.utils.StreamTableTestUtil;
 import org.apache.flink.table.planner.utils.TableTestBase;
+import org.apache.flink.types.Row;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.Iterator;
 import java.util.stream.Stream;
 
 /** Test for {@link FileSystemTableSource}. */
@@ -119,6 +127,45 @@ class FileSystemTableSourceTest extends TableTestBase {
                 FileSystemTableSource.ReadableFileInfo.FILEPATH.getAccessor().getValue(split);
 
         assertThat(actual).isEqualTo(StringData.fromString(expected));
+    }
+
+    @TempDir java.nio.file.Path tempDir;
+
+    @Test
+    @EnabledOnOs(OS.WINDOWS)
+    void testForWindowsSpecificFileNameFix() throws Exception {
+        // Set up temporary directory and related input file
+        java.nio.file.Path inputDir = tempDir.resolve("data").resolve("input");
+        Files.createDirectories(inputDir);
+        Files.write(inputDir.resolve("user.csv"), "1,Alice,30\n".getBytes(StandardCharsets.UTF_8));
+
+        // Test environment
+        TableEnvironment tEnv = util.getTableEnv();
+
+        // Sanitize path
+        String sanitizedPath = inputDir.toAbsolutePath().toString().replace("\\", "\\\\");
+
+        tEnv.executeSql(
+                "CREATE TABLE fs_source_table (\n"
+                        + "  user_id STRING,\n"
+                        + "  name STRING,\n"
+                        + "  age INT,\n"
+                        + "  file_name STRING NOT NULL METADATA FROM 'file.name' VIRTUAL\n"
+                        + ") WITH (\n"
+                        + "  'connector' = 'filesystem',\n"
+                        + "  'path' = '"
+                        + sanitizedPath
+                        + "',\n"
+                        + "  'format' = 'testcsv'\n"
+                        + ")");
+
+        TableResult result =
+                tEnv.executeSql("SELECT user_id, name, age, file_name FROM fs_source_table");
+
+        Iterator<Row> it = result.collect();
+        Row r = it.next();
+
+        assertThat(r.getField(3)).isEqualTo("user.csv");
     }
 
     static Stream<Arguments> fileNameCases() {
