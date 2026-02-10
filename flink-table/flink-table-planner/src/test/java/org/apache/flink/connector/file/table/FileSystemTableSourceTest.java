@@ -137,7 +137,9 @@ class FileSystemTableSourceTest extends TableTestBase {
         // Set up temporary directory and related input file
         java.nio.file.Path inputDir = tempDir.resolve("data").resolve("input");
         Files.createDirectories(inputDir);
-        Files.write(inputDir.resolve("user.csv"), "1,Alice,30\n".getBytes(StandardCharsets.UTF_8));
+        Files.write(
+                inputDir.resolve("user_filename.csv"),
+                "1,Alice,30\n".getBytes(StandardCharsets.UTF_8));
 
         // Test environment
         TableEnvironment tEnv = util.getTableEnv();
@@ -165,7 +167,46 @@ class FileSystemTableSourceTest extends TableTestBase {
         Iterator<Row> it = result.collect();
         Row r = it.next();
 
-        assertThat(r.getField(3)).isEqualTo("user.csv");
+        assertThat(r.getField(3)).isEqualTo("user_filename.csv");
+    }
+
+    @Test
+    @EnabledOnOs(OS.WINDOWS)
+    void testForWindowsSpecificFilePathFix() throws Exception {
+        // Set up temporary directory and related input file
+        java.nio.file.Path inputDir = tempDir.resolve("data").resolve("input");
+        Files.createDirectories(inputDir);
+        Files.write(
+                inputDir.resolve("user_filepath.csv"),
+                "1,Alice,30\n".getBytes(StandardCharsets.UTF_8));
+
+        // Test environment
+        TableEnvironment tEnv = util.getTableEnv();
+
+        // Sanitize path
+        String sanitizedPath = inputDir.toAbsolutePath().toString().replace("\\", "\\\\");
+
+        tEnv.executeSql(
+                "CREATE TABLE fs_source_table (\n"
+                        + "  user_id STRING,\n"
+                        + "  name STRING,\n"
+                        + "  age INT,\n"
+                        + "  file_path STRING NOT NULL METADATA FROM 'file.path' VIRTUAL\n"
+                        + ") WITH (\n"
+                        + "  'connector' = 'filesystem',\n"
+                        + "  'path' = '"
+                        + sanitizedPath
+                        + "',\n"
+                        + "  'format' = 'testcsv'\n"
+                        + ")");
+
+        TableResult result =
+                tEnv.executeSql("SELECT user_id, name, age, file_path FROM fs_source_table");
+
+        Iterator<Row> it = result.collect();
+        Row r = it.next();
+
+        assertThat(r.getField(3)).isEqualTo(sanitizedPath + "/user_filepath.csv");
     }
 
     static Stream<Arguments> fileNameCases() {
