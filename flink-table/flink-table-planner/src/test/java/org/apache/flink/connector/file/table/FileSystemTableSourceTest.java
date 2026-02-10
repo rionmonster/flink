@@ -206,7 +206,10 @@ class FileSystemTableSourceTest extends TableTestBase {
         Iterator<Row> it = result.collect();
         Row r = it.next();
 
-        assertThat(r.getField(3)).isEqualTo(sanitizedPath + "/user_filepath.csv");
+        String expectedPath =
+                new Path(inputDir.toAbsolutePath().toString()).toUri().getPath()
+                        + "/user_filepath.csv";
+        assertThat(r.getField(3)).isEqualTo(expectedPath);
     }
 
     static Stream<Arguments> fileNameCases() {
