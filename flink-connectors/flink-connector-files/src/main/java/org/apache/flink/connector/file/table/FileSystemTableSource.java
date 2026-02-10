@@ -62,7 +62,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -516,8 +515,7 @@ public class FileSystemTableSource extends AbstractFileSystemTable
 
                     @Override
                     public Object getValue(FileSourceSplit split) {
-                        return StringData.fromString(
-                                Paths.get(split.path().getPath()).getFileName().toString());
+                        return StringData.fromString(extractFileName(split.path()));
                     }
                 }),
         SIZE(
